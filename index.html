@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Школьный буфет по талонам</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        /* Общие стили */
+        :root {
+            --primary-color: #4a90e2;
+            --secondary-color: #50c878;
+            --accent-color: #ff9f43;
+            --payment-color: #9c27b0;
+            --light-color: #f9f9f9;
+            --dark-color: #333;
+            --shadow: 0 10px 30px rgba(0,0,0,0.1);
+            --gradient: linear-gradient(135deg, #4a90e2 0%, #50c878 100%);
+            --payment-gradient: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background-color: #f5f7fa;
+            color: var(--dark-color);
+            line-height: 1.6;
+            overflow-x: hidden;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+        
+        section {
+            padding: 100px 0;
+            position: relative;
+        }
+        
+        h1, h2, h3 {
+            margin-bottom: 20px;
+            color: var(--primary-color);
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            font-weight: 800;
+            background: var(--gradient);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        h2 {
+            font-size: 2.5rem;
+            text-align: center;
+            margin-bottom: 50px;
+            position: relative;
+        }
+        
+        h2:after {
+            content: '';
+            position: absolute;
+            bottom: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 4px;
+            background: var(--gradient);
+            border-radius: 2px;
+        }
+        
+        p {
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            line-height: 1.8;
+        }
+        
+        .btn {
+            display: inline-block;
+            padding: 15px 40px;
+            background: var(--gradient);
+            color: white;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-decoration: none;
+            box-shadow: var(--shadow);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+            transition: 0.5s;
+        }
+        
+        .btn:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        }
+        
+        .btn:hover:before {
+            left: 100%;
+        }
+        
+        /* Анимации */
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-15px); }
+            100% { transform: translateY(0px); }
+        }
+        
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        
+        .animated {
+            animation: fadeIn 1s ease forwards;
+        }
+        
+        .float {
+            animation: float 5s ease-in-out infinite;
+        }
+        
+        .pulse {
+            animation: pulse 3s ease-in-out infinite;
+        }
+        
+        /* Шапка */
+        header {
+            background-color: rgba(255, 255, 255, 0.95);
+            box-shadow: var(--shadow);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+            backdrop-filter: blur(10px);
+        }
+        
+        nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 0;
+        }
+        
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--primary-color);
+            display: flex;
+            align-items: center;
+        }
+        
+        .logo i {
+            margin-right: 10px;
+            font-size: 2rem;
+        }
+        
+        .nav-links {
+            display: flex;
+            list-style: none;
+        }
+        
+        .nav-links li {
+            margin-left: 30px;
+            position: relative;
+        }
+        
+        .nav-links a {
+            text-decoration: none;
+            color: var(--dark-color);
+            font-weight: 500;
+            transition: color 0.3s ease;
+            padding: 5px 0;
+        }
+        
+        .nav-links a:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 2px;
+            background: var(--gradient);
+            transition: width 0.3s ease;
+        }
+        
+        .nav-links a:hover {
+            color: var(--primary-color);
+        }
+        
+        .nav-links a:hover:after {
+            width: 100%;
+        }
+        
+        /* Главная секция */
+        .hero {
+            background: linear-gradient(135deg, #e3f2fd 0%, #f9f9f9 100%);
+            padding: 180px 0 120px;
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .hero:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -50%;
+            width: 100%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(74, 144, 226, 0.1) 0%, transparent 70%);
+        }
+        
+        .hero h1 {
+            font-size: 4rem;
+            margin-bottom: 30px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .hero p {
+            font-size: 1.5rem;
+            max-width: 800px;
+            margin: 0 auto 40px;
+            position: relative;
+            z-index: 2;
+        }
+        
+        .payment-text {
+            font-size: 1.3rem;
+            color: var(--payment-color);
+            margin-top: 20px;
+            font-weight: 600;
+        }
+        
+        .floating-icons {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            pointer-events: none;
+        }
+        
+        .floating-icons i {
+            position: absolute;
+            font-size: 2rem;
+            color: var(--primary-color);
+            opacity: 0.2;
+        }
+        
+        .floating-icons i:nth-child(1) {
+            top: 20%;
+            left: 10%;
+            animation: float 7s ease-in-out infinite;
+        }
+        
+        .floating-icons i:nth-child(2) {
+            top: 60%;
+            left: 5%;
+            animation: float 9s ease-in-out infinite;
+        }
+        
+        .floating-icons i:nth-child(3) {
+            top: 30%;
+            right: 10%;
+            animation: float 8s ease-in-out infinite;
+        }
+        
+        .floating-icons i:nth-child(4) {
+            top: 70%;
+            right: 5%;
+            animation: float 10s ease-in-out infinite;
+        }
+        
+        /* Секция проблемы */
+        .problem {
+            background-color: white;
+            position: relative;
+        }
+        
+        .problem-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+        
+        .problem-text {
+            flex: 1;
+        }
+        
+        .problem-visual {
+            flex: 1;
+            background: linear-gradient(135deg, #ffeaea 0%, #ffcccc 100%);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+            transform: perspective(1000px) rotateY(-5deg);
+            transition: transform 0.5s ease;
+        }
+        
+        .problem-visual:hover {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+        
+        .problem-visual:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, transparent 30%, rgba(255,255,255,0.3) 50%, transparent 70%);
+            transform: translateX(-100%);
+        }
+        
+        .problem-visual:hover:before {
+            animation: shine 1.5s ease;
+        }
+        
+        @keyframes shine {
+            0% { transform: translateX(-100%); }
+            100% { transform: translateX(100%); }
+        }
+        
+        .incident {
+            font-size: 1.5rem;
+            margin-bottom: 30px;
+            color: #d63031;
+            font-weight: bold;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .risk-list {
+            list-style: none;
+        }
+        
+        .risk-list li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .risk-list li:hover {
+            transform: translateX(10px);
+        }
+        
+        .risk-list li:before {
+            content: "⚠️";
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+        
+        /* Секция решения */
+        .solution {
+            background: linear-gradient(135deg, #f0f8ff 0%, #e6f7ff 100%);
+            position: relative;
+        }
+        
+        .solution-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+        
+        .solution-text {
+            flex: 1;
+        }
+        
+        .solution-visual {
+            flex: 1;
+            background: linear-gradient(135deg, #e8f5e9 0%, #d0efd0 100%);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .solution-visual:after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-style: solid;
+            border-width: 0 0 100px 100px;
+            border-color: transparent transparent var(--secondary-color) transparent;
+            opacity: 0.2;
+        }
+        
+        .payment-explanation {
+            background: rgba(156, 39, 176, 0.1);
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 20px;
+            border-left: 4px solid var(--payment-color);
+        }
+        
+        .benefit-list {
+            list-style: none;
+        }
+        
+        .benefit-list li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .benefit-list li:hover {
+            transform: translateX(10px);
+        }
+        
+        .benefit-list li:before {
+            content: "✓";
+            color: var(--secondary-color);
+            font-weight: bold;
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+        
+        /* Секция работы системы */
+        .how-it-works {
+            background-color: white;
+            position: relative;
+        }
+        
+        .timeline {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 70px;
+            position: relative;
+        }
+        
+        .timeline:before {
+            content: '';
+            position: absolute;
+            top: 60px;
+            left: 0;
+            right: 0;
+            height: 6px;
+            background: var(--gradient);
+            border-radius: 3px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .timeline-step {
+            text-align: center;
+            flex: 1;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .timeline-icon {
+            width: 120px;
+            height: 120px;
+            background: white;
+            border: 6px solid var(--primary-color);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 30px;
+            font-size: 2.5rem;
+            color: var(--primary-color);
+            box-shadow: var(--shadow);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-icon.payment {
+            border-color: var(--payment-color);
+            color: var(--payment-color);
+        }
+        
+        .timeline-icon:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--gradient);
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            z-index: -1;
+        }
+        
+        .timeline-icon.payment:before {
+            background: var(--payment-gradient);
+        }
+        
+        .timeline-icon:hover {
+            transform: scale(1.1);
+            color: white;
+            border-color: transparent;
+        }
+        
+        .timeline-icon:hover:before {
+            opacity: 1;
+        }
+        
+        .timeline-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .timeline-content:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 5px;
+            height: 100%;
+            background: var(--gradient);
+        }
+        
+        .timeline-content.payment:before {
+            background: var(--payment-gradient);
+        }
+        
+        .timeline-content:hover {
+            transform: translateY(-10px);
+        }
+        
+        /* Секция комфорта */
+        .comfort {
+            background: linear-gradient(135deg, #fff9e6 0%, #fff0cc 100%);
+            position: relative;
+        }
+        
+        .comfort-content {
+            display: flex;
+            align-items: center;
+            gap: 60px;
+        }
+        
+        .comfort-text {
+            flex: 1;
+        }
+        
+        .comfort-visual {
+            flex: 1;
+            background: linear-gradient(135deg, #fff9e6 0%, #ffe6cc 100%);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .comfort-visual:before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.3) 0%, transparent 70%);
+            transform: rotate(30deg);
+        }
+        
+        .comfort-list {
+            list-style: none;
+        }
+        
+        .comfort-list li {
+            margin-bottom: 20px;
+            display: flex;
+            align-items: flex-start;
+            padding: 15px;
+            background: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+        
+        .comfort-list li:hover {
+            transform: translateX(10px);
+        }
+        
+        .comfort-list li:before {
+            content: "😊";
+            margin-right: 15px;
+            font-size: 1.5rem;
+        }
+        
+        /* Секция преимуществ */
+        .advantages {
+            background-color: white;
+            position: relative;
+        }
+        
+        .advantages-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 40px;
+        }
+        
+        .advantage-card {
+            background: white;
+            padding: 40px 30px;
+            border-radius: 20px;
+            box-shadow: var(--shadow);
+            text-align: center;
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .advantage-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 5px;
+            background: var(--gradient);
+        }
+        
+        .advantage-card.payment:before {
+            background: var(--payment-gradient);
+        }
+        
+        .advantage-card:hover {
+            transform: translateY(-15px);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.15);
+        }
+        
+        .advantage-icon {
+            font-size: 3.5rem;
+            margin-bottom: 25px;
+            color: var(--primary-color);
+            display: inline-block;
+            transition: transform 0.4s ease;
+        }
+        
+        .advantage-card.payment .advantage-icon {
+            color: var(--payment-color);
+        }
+        
+        .advantage-card:hover .advantage-icon {
+            transform: scale(1.2) rotate(10deg);
+        }
+        
+        /* Адаптивность */
+        @media (max-width: 1100px) {
+            .problem-content, .solution-content, .comfort-content {
+                flex-direction: column;
+            }
+            
+            .timeline {
+                flex-direction: column;
+                gap: 50px;
+            }
+            
+            .timeline:before {
+                display: none;
+            }
+            
+            .timeline-step {
+                margin-bottom: 30px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .nav-links {
+                display: none;
+            }
+            
+            h1 {
+                font-size: 2.5rem;
+            }
+            
+            h2 {
+                font-size: 2rem;
+            }
+            
+            .hero {
+                padding: 150px 0 80px;
+            }
+            
+            section {
+                padding: 80px 0;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Шапка -->
+    <header>
+        <div class="container">
+            <nav>
+                <div class="logo">
+                    <i class="fas fa-utensils"></i>
+                    Школьный буфет по талонам
+                </div>
+                <ul class="nav-links">
+                    <li><a href="#problem">Проблема</a></li>
+                    <li><a href="#solution">Решение</a></li>
+                    <li><a href="#how-it-works">Как работает</a></li>
+                    <li><a href="#comfort">Комфорт</a></li>
+                    <li><a href="#advantages">Преимущества</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Главная секция -->
+    <section class="hero">
+        <div class="container">
+            <h1 class="animated">Школьный буфет по талонам</h1>
+            <p class="animated">Комфорт и безопасность для учеников и родителей</p>
+            <p class="payment-text animated">Ученик платит за выбранные продукты в буфете</p>
+            <a href="#problem" class="btn animated">Узнать больше</a>
+        </div>
+        <div class="floating-icons">
+            <i class="fas fa-cookie-bite float"></i>
+            <i class="fas fa-apple-alt float"></i>
+            <i class="fas fa-ice-cream float"></i>
+            <i class="fas fa-mug-hot float"></i>
+        </div>
+    </section>
+
+    <!-- Секция проблемы -->
+    <section id="problem" class="problem">
+        <div class="container">
+            <h2 class="animated">Проблема</h2>
+            <div class="problem-content">
+                <div class="problem-text animated">
+                    <p>В школе уже есть бесплатное питание (завтрак, обед, ужин), но детям часто хочется сладостей и легких перекусов.</p>
+                    <p>Из-за этого ученики покидают территорию школы, создавая опасные ситуации:</p>
+                    <ul class="risk-list">
+                        <li>Риск травм при пересечении ограждения</li>
+                        <li>Опасность дорожного движения</li>
+                        <li>Неконтролируемое питание</li>
+                        <li>Нарушение школьных правил</li>
+                        <li>Потеря учебного времени</li>
+                    </ul>
+                </div>
+                <div class="problem-visual animated">
+                    <h3>Опасная ситуация</h3>
+                    <div class="incident">Уход учеников в магазин во время уроков</div>
+                    <p>🚫 Опасность для здоровья</p>
+                    <p>🚫 Нарушение правил</p>
+                    <p>🚫 Риск травм</p>
+                    <p>🚫 Бесконтрольность</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция решения -->
+    <section id="solution" class="solution">
+        <div class="container">
+            <h2 class="animated">Решение</h2>
+            <div class="solution-content">
+                <div class="solution-visual animated">
+                    <h3>Школьный буфет для сладостей и напитков</h3>
+                    <p>✅ Дополнительное платное питание</p>
+                    <p>✅ Только по талонам с согласия родителей</p>
+                    <p>✅ Вкусные сладости и напитки</p>
+                    <p>✅ Безопасность на территории школы</p>
+                </div>
+                <div class="solution-text animated">
+                    <p>Наше решение - создание школьного буфета с системой доступа по талонам.</p>
+                    <p>Буфет предлагает то, что любят дети:</p>
+                    <ul class="benefit-list">
+                        <li>Сладкие напитки</li>
+                        <li>Разнообразные сладости</li>
+                        <li>Вкусные легкие перекусы</li>
+                    </ul>
+                    <p>Доступ только по талонам, которые выдаются классным руководителем при согласии родителей.</p>
+                    <div class="payment-explanation">
+                        <p><strong>Ученик самостоятельно оплачивает выбранные продукты в буфете.</strong> Это помогает развивать финансовую ответственность и учит детей разумно распоряжаться деньгами.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция работы системы -->
+    <section id="how-it-works" class="how-it-works">
+        <div class="container">
+            <h2 class="animated">Как работает система талонов</h2>
+            <div class="timeline">
+                <div class="timeline-step animated">
+                    <div class="timeline-icon">
+                        <i class="fas fa-user-friends"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h3>Родительское согласие</h3>
+                        <p>Родитель даёт согласие классному руководителю на питание в буфете</p>
+                    </div>
+                </div>
+                <div class="timeline-step animated">
+                    <div class="timeline-icon">
+                        <i class="fas fa-ticket-alt"></i>
+                    </div>
+                    <div class="timeline-content">
+                        <h3>Выдача талона</h3>
+                        <p>Классный руководитель выдаёт ученику талон на питание в буфете</p>
+                    </div>
+                </div>
+                <div class="timeline-step animated">
+                    <div class="timeline-icon payment">
+                        <i class="fas fa-cash-register"></i>
+                    </div>
+                    <div class="timeline-content payment">
+                        <h3>Оплата и получение</h3>
+                        <p>Ученик предъявляет талон, оплачивает и получает выбранные продукты в школьном буфете</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция комфорта -->
+    <section id="comfort" class="comfort">
+        <div class="container">
+            <h2 class="animated">Комфорт для всех</h2>
+            <div class="comfort-content">
+                <div class="comfort-text animated">
+                    <p>Система буфета по талонам создаёт комфортные условия для всех участников процесса:</p>
+                    <ul class="comfort-list">
+                        <li>Ученик получает возможность купить то, что любит, прямо в школе</li>
+                        <li>Родители уверены в контроле и безопасности</li>
+                        <li>Никто не выходит за пределы школы</li>
+                        <li>Всё организовано безопасно и удобно</li>
+                        <li>Дети довольны, родители спокойны</li>
+                        <li>Ученик учится финансовой ответственности, самостоятельно оплачивая покупки</li>
+                    </ul>
+                </div>
+                <div class="comfort-visual animated">
+                    <h3>Что даёт система</h3>
+                    <p>😊 Довольные ученики</p>
+                    <p>😊 Спокойные родители</p>
+                    <p>😊 Безопасная среда</p>
+                    <p>💰 Контроль расходов</p>
+                    <p>😊 Удобство для всех</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Секция преимуществ -->
+    <section id="advantages" class="advantages">
+        <div class="container">
+            <h2 class="animated">Преимущества системы</h2>
+            <div class="advantages-grid">
+                <div class="advantage-card animated">
+                    <div class="advantage-icon">
+                        <i class="fas fa-shield-alt"></i>
+                    </div>
+                    <h3>Безопасность</h3>
+                    <p>Дети не покидают территорию школы, оставаясь в безопасности</p>
+                </div>
+                <div class="advantage-card animated">
+                    <div class="advantage-icon">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <h3>Контроль родителей</h3>
+                    <p>Родители контролируют питание учащихся через систему талонов</p>
+                </div>
+                <div class="advantage-card payment animated">
+                    <div class="advantage-icon">
+                        <i class="fas fa-coins"></i>
+                    </div>
+                    <h3>Финансовая ответственность</h3>
+                    <p>Ученики самостоятельно оплачивают покупки, учась управлять деньгами</p>
+                </div>
+                <div class="advantage-card animated">
+                    <div class="advantage-icon">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <h3>Экономия времени</h3>
+                    <p>Ученики не тратят время на походы в магазин</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <script>
+        // Плавная прокрутка к якорям
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                
+                const targetId = this.getAttribute('href');
+                if (targetId === '#') return;
+                
+                const targetElement = document.querySelector(targetId);
+                if (targetElement) {
+                    window.scrollTo({
+                        top: targetElement.offsetTop - 80,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        });
+
+        // Анимация появления элементов при прокрутке
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.classList.add('animated');
+                }
+            });
+        }, observerOptions);
+
+        document.querySelectorAll('section h2, .problem-content > div, .solution-content > div, .comfort-content > div, .timeline-step, .advantage-card').forEach(el => {
+            observer.observe(el);
+        });
+    </script>
+</body>
+</html>
